@@ -18,6 +18,7 @@
   "dependencies": {
     "@metamask/delegation-toolkit": "^0.11.0",
     "@metamask/delegation-utils": "^0.11.0",
+    "@nucypher/shared": "^0.6.0-alpha.5",
     "@nucypher/taco": "^0.7.0-alpha.5",
     "@types/winston": "^2.4.4",
     "dotenv": "^16.5.0",

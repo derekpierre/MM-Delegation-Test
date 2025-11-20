@@ -11,14 +11,9 @@ This project demonstrates the integration of MetaMask's Delegation Toolkit with 
    - Acts as the source of authority
    - Can hold and transfer funds
    - Controlled through delegations
+   - Uses TACo signers and threshold
 
-2. **TACo EIP-1271 MultiSig (Delegatee)**
-   - Implements EIP-1271 for signature verification
-   - Requires threshold number of signatures
-   - Authorizes actions on behalf of the delegator
-   - Contract address: `0xDdBb4c470C7BFFC97345A403aC7FcA77844681D9`
-
-3. **TACo Signer System**
+2. **TACo Signer System**
    - Distributed network of Ursula nodes on `lynx` testnet
    - Provides threshold-based signatures
    - Implements secure signature aggregation

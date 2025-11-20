@@ -21,6 +21,7 @@ import {
 import { baseSepolia } from 'viem/chains';
 import * as dotenv from 'dotenv';
 import winston, { Logger } from 'winston';
+import { SigningCoordinator, SigningCoordinatorAgent } from '@nucypher/shared';
 import { initialize, domains, signUserOp } from '@nucypher/taco';
 
 
@@ -70,13 +71,7 @@ var ENTRY_POINT_ADDRESS = "0x0000000071727De22E5E9d8BAf0edAc6f37da032" as Addres
 const BASE_SEPOLIA_CHAIN_ID = 84532;
 const COHORT_ID = 1;
 const TACO_DOMAIN = domains.DEVNET;
-const MULTISIG_ADDRESS = "0xDdBb4c470C7BFFC97345A403aC7FcA77844681D9" as Address;  // COHORT 1 MULTISIG on Base Sepolia
 const ETH_PROVIDER = new ethers.providers.JsonRpcProvider("https://sepolia.drpc.org");
-
-const MULTISIG_ABI = [
-    "function getSigners() view returns (address[])",
-    "function threshold() view returns (uint16)"
-] as const;
 
 async function logBalance(label: string, provider: ethers.providers.JsonRpcProvider, address: string) {
     const balance = await provider.getBalance(address);
@@ -148,10 +143,11 @@ async function deployAndSetupSmartAccount({
 }: any) {
     logger.info('--- DEPLOYING USER SMART ACCOUNT ---');
 
-    // Get signers and threshold from MultiSig contract
-    const multisigContract = new ethers.Contract(MULTISIG_ADDRESS, MULTISIG_ABI, provider);
-    const signers = await multisigContract.getSigners();
-    const threshold = await multisigContract.threshold();
+    // Get signers and threshold from SigningCoordinator
+    const participants = await SigningCoordinatorAgent.getParticipants(ETH_PROVIDER, TACO_DOMAIN, COHORT_ID)
+    const signers = participants.map(p => p.signerAddress as Address);
+
+    const threshold = await SigningCoordinatorAgent.getThreshold(ETH_PROVIDER, TACO_DOMAIN, COHORT_ID);
 
     logger.info(`Got ${signers.length} signers from MultiSig contract with threshold ${threshold}`);
     logger.debug(`Signers: ${signers.join(', ')}`);
@@ -159,7 +155,7 @@ async function deployAndSetupSmartAccount({
     const userSmartAccount = await toMetaMaskSmartAccount({
         client: publicClient,
         implementation: Implementation.MultiSig,
-        deployParams: [signers, threshold],
+        deployParams: [signers, BigInt(threshold)],
         deploySalt: "0x" as Hex,
         signatory: [{
             account: localAccount
